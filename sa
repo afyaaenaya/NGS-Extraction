@@ -1,0 +1,17 @@
+* [33mcommit 1c5bf4dcf7c57c4c9c71e1e4f933b7935e10efc5[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mtable-extraction[m[33m, [m[1;31morigin/table-extraction[m[33m)[m
+[31m|[m Author: Afyaa Enaya <afyaa.enaya@mail.utoronto.ca>
+[31m|[m Date:   Wed Jul 17 09:18:26 2024 +0300
+[31m|[m 
+[31m|[m     minor changes to function parameters' names
+[31m|[m 
+* [33mcommit cc82679b05ff664ffa245e05bb1acbd30181cca4[m
+[31m|[m Author: Afyaa Enaya <afyaa.enaya@mail.utoronto.ca>
+[31m|[m Date:   Sun Jul 14 11:22:11 2024 +0300
+[31m|[m 
+[31m|[m     implemented tables_to_excel
+[31m|[m 
+* [33mcommit 53a469a51912f09649f9d9b700c868eab901c2b9[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/PDF-Reader[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmain[m[33m, [m[1;32mPDF-Reader[m[33m)[m
+  Author: afyaae <168218720+afyaae@users.noreply.github.com>
+  Date:   Thu Jul 11 14:15:43 2024 +0300
+  
+      Initial commit
