@@ -2,10 +2,10 @@ import os
 import csv
 import ast
 from llama_parse import LlamaParse
-from llama_index.core import VectorStoreIndex, SimpleDirectoryReader
-import llama_index.llms.openai
+from llama_index.core import VectorStoreIndex, SimpleDirectoryReader, Settings
 from get_directories import get_input_directory, get_output_file, input_directory_path, output_file_path
 from api_keys import get_api_keys
+from llama_index.embeddings.openai import OpenAIEmbedding
 
 def parser_setup(llama_cloud_api_key):
 
@@ -18,6 +18,8 @@ def parser_setup(llama_cloud_api_key):
 
     return file_extractor
 
+def embed_model_setup():
+    Settings.embed_model = OpenAIEmbedding(model = "text-embedding-3-small")
 
 def process_files(input_directory_path, file_extractor):
 
@@ -36,10 +38,12 @@ def process_files(input_directory_path, file_extractor):
             query_engine = index.as_query_engine()
 
             # query the engine
-            query = "Complete this python dictionary with data from the provided file and return just the dictionary with no added context.\
+            query = "Fill this python dictionary's values using the given file. \
+                Return only the dictionary.\
                 If no pathogenic mutation is found, fill it in the dictionary as 'None found'\
                 If no variants of unknown significance were found, fill it in the dictionary as 'None found'\
-                {'Patient Name': '', 'Date of Birth': '', 'Gender': '', 'MRN': '', 'Lab No.': '', 'Accession No.':'', 'Specimen Clinical Indication': '', 'Type of Specimen': '', 'Tissue Origin': '', 'Physician': '', 'Date Received': '', 'Date Reported': '', 'Pathogenic Mutations': '', 'Variants of Unknown Significance': ''}"
+                The file must contain a value for all the keys, only 'Tissue Origin' could be left blank.\
+                Template: {'Patient Name': '', 'Date of Birth': '', 'Gender': '', 'MRN': '', 'Lab No.': '', 'Accession No.':'', 'Clinical Indication': '', 'Type of Specimen': '', 'Tissue Origin': '', 'Physician': '', 'Date Received': '', 'Date Reported': '', 'Pathogenic Mutations': '', 'Variants of Unknown Significance': ''}"
             response = query_engine.query(query)
 
             if hasattr(response, 'response'):
@@ -56,7 +60,7 @@ def process_output(output_file_path, data: list):
 
     with open(output_file_path, 'a', newline='') as output_file:
         
-        fieldnames = ['Patient Name', 'Date of Birth', 'Gender', 'MRN', 'Lab No.', 'Accession No.', 'Specimen Clinical Indication', 'Type of Specimen', 'Tissue Origin', 'Physician', 'Date Received', 'Date Reported', 'Pathogenic Mutations', 'Variants of Unknown Significance']
+        fieldnames = ['Patient Name', 'Date of Birth', 'Gender', 'MRN', 'Lab No.', 'Accession No.', 'Clinical Indication', 'Type of Specimen', 'Tissue Origin', 'Physician', 'Date Received', 'Date Reported', 'Pathogenic Mutations', 'Variants of Unknown Significance']
         
         writer = csv.DictWriter(output_file, fieldnames=fieldnames)
 
@@ -68,6 +72,7 @@ def process_output(output_file_path, data: list):
 if __name__ == "__main__":
     input_directory_path = get_input_directory()
     output_file_path = get_output_file()
+    embed_model_setup()
     llama_cloud_api_key, openai_api_key = get_api_keys()
     file_extractor = parser_setup(llama_cloud_api_key)
     data = process_files(input_directory_path, file_extractor)
