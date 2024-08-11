@@ -40,8 +40,8 @@ def process_files(input_directory_path, file_extractor):
             # query the engine
             query = "Fill this python dictionary's values using the given file. \
                 Return only the dictionary.\
-                If no pathogenic mutation is found, fill it in the dictionary as 'None found'\
-                If no variants of unknown significance were found, fill it in the dictionary as 'None found'\
+                If the text states that no pathogenic mutation is found, set the value of 'Pathogenic Mutations' in the dictionary as 'None found'\
+                If the text states that no variants of unknown significance were found, set the value of 'Variants of Unknown Significance' in the dictionary as 'None found'\
                 The file must contain a value for all the keys, only 'Tissue Origin' could be left blank.\
                 Template: {'Patient Name': '', 'Date of Birth': '', 'Gender': '', 'MRN': '', 'Lab No.': '', 'Accession No.':'', 'Clinical Indication': '', 'Type of Specimen': '', 'Tissue Origin': '', 'Physician': '', 'Date Received': '', 'Date Reported': '', 'Pathogenic Mutations': '', 'Variants of Unknown Significance': ''}"
             response = query_engine.query(query)
