@@ -31,9 +31,7 @@ def get_output_file():
             while create_confirmation not in ["y", "n"]:
                 create_confirmation = input(f"Invalid input. Do you want to create a new file at {output_file_path}? [y/n]")
 
-            if create_confirmation == "y":
-                pass
-            elif create_confirmation == "n":
-                pass
+            if create_confirmation == "n":
+                get_output_file()
 
     return output_file_path
