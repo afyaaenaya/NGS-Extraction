@@ -32,6 +32,7 @@ def get_output_file():
                 create_confirmation = input(f"Invalid input. Do you want to create a new file at {output_file_path}? [y/n]")
 
             if create_confirmation == "n":
+                output_file_path = ''
                 get_output_file()
 
     return output_file_path
