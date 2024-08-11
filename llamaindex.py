@@ -1,6 +1,8 @@
 import os
 import csv
 import ast
+import csv
+import ast
 from llama_parse import LlamaParse
 from llama_index.core import VectorStoreIndex, SimpleDirectoryReader, Settings
 from get_directories import get_input_directory, get_output_file, input_directory_path, output_file_path
@@ -53,6 +55,14 @@ def process_files(input_directory_path, file_extractor):
                     else:
                         print(f"Entry is not formatted as a dictionary: {response.response}")
 
+
+            if hasattr(response, 'response'):
+                    dict_data = ast.literal_eval(response.response)
+                    if isinstance(dict_data, dict):
+                        data.append(dict_data)
+                    else:
+                        print(f"Entry is not formatted as a dictionary: {response.response}")
+
     return data
 
 def process_output(output_file_path, data: list):
@@ -75,5 +85,7 @@ if __name__ == "__main__":
     embed_model_setup()
     llama_cloud_api_key, openai_api_key = get_api_keys()
     file_extractor = parser_setup(llama_cloud_api_key)
+    data = process_files(input_directory_path, file_extractor)
+    process_output(output_file_path, data)
     data = process_files(input_directory_path, file_extractor)
     process_output(output_file_path, data)
