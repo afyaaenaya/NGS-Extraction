@@ -1,14 +1,9 @@
 import ocrmypdf
 import os
-
-def get_dir():
-    dir = input("Enter the path to the folder containing the PDF files:")
-    while not os.path.isdir(dir):
-        dir = input("Invalid. Enter the path to the folder containing the PDF files:")
-    
-    return dir
+from get_directories import get_input_directory, input_directory_path
 
 def ocr_folder(dir_path):
+
     files = os.listdir(dir_path)
 
     for file in files:
@@ -20,5 +15,5 @@ def ocr_folder(dir_path):
             os.replace(temp_path, file_path)
 
 if __name__ == '__main__':
-    dir = get_dir()
-    ocr_folder(dir)
+    input_directory_path = get_input_directory()
+    # ocr_folder(dir)
