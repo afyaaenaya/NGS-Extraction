@@ -34,16 +34,14 @@ def process_files(input_directory_path, file_extractor):
             document = SimpleDirectoryReader(input_files=[file_path], file_extractor=file_extractor).load_data()
             index = VectorStoreIndex.from_documents(document)
 
-            # create a query engine for the index
             query_engine = index.as_query_engine()
 
-            # query the engine
-            query = "Fill this python dictionary's values using the given file. \
+            query = "Fill this python dictionary's values using the given file.\
                 Return only the dictionary.\
                 If the text states that no pathogenic mutation is found, set the value of 'Pathogenic Mutations' in the dictionary as 'None found'\
-                If the text states that no variants of unknown significance were found, set the value of 'Variants of Unknown Significance' in the dictionary as 'None found'\
-                The file must contain a value for all the keys, only 'Tissue Origin' could be left blank.\
-                Template: {'Patient Name': '', 'Date of Birth': '', 'Gender': '', 'MRN': '', 'Lab No.': '', 'Accession No.':'', 'Clinical Indication': '', 'Type of Specimen': '', 'Tissue Origin': '', 'Physician': '', 'Date Received': '', 'Date Reported': '', 'Pathogenic Mutations': '', 'Variants of Unknown Significance': ''}"
+                and the same applies to 'Variants of Unknown Significance'.\
+                All keys must have a value in the file, except 'Tissue of Origin' which might be left blank.\
+                {'Patient Name': , 'Date of Birth': , 'Gender': , 'MRN': , 'Lab No.': , 'Accession No.':, 'Clinical Indication': , 'Type of Specimen': , 'Tissue Origin': , 'Physician': , 'Date Received': , 'Date Reported': , 'Pathogenic Mutations': , 'Variants of Unknown Significance': }"
             response = query_engine.query(query)
 
             if hasattr(response, 'response'):
