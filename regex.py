@@ -27,7 +27,6 @@ def patient_information(input_directory_path):
             lines = text.splitlines()
 
             info1 = lines[1] ## name, date of birth, gender
-            print(info1)
             pattern1 = r"^(.*?)(\d{2}/\d{2}/\d{4})(.*)$"
 
             match1 = re.match(pattern1, info1)
@@ -45,7 +44,6 @@ def patient_information(input_directory_path):
                 print(f'Name, date of birth, and gender of {file_path} can not be identified ')
 
             info2 = lines[3] ## MRN, Lab No., Accession No.
-            print(info2)
             pattern2 = r"^(\d+)\s+(M\w\d+)\s+(.*)$"
 
             match2 = re.match(pattern2, info2)
