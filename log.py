@@ -8,7 +8,7 @@ def get_log():
         print(f'Created log file at {log}')
 
     with open(log_path, 'r') as log:
-        return set(line.strip() for line in file)
+        return set(line.strip() for line in log)
 
 def log_processed_file(file_path):
     log_path = os.path.join(os.getcwd(), 'log.txt')
