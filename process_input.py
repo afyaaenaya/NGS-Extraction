@@ -89,14 +89,14 @@ def patient_information(input_directory_path):
             else:
                 print(f"Failed to extract 'MRN' from {file_path}")
 
-            lab_no_pattern = r"(\w{1}\d+)"
+            lab_no_pattern = r"([A-Za-z]\d+)"
             lab_no_match = re.search(lab_no_pattern, info)
             if lab_no_match:
                 patient_info['Lab No.'] = lab_no_match.group(1).strip()
             else:
                 print(f"Failed to extract 'Lab No.' from {file_path}")
 
-            accession_no_pattern = r"(\d{4,})$"
+            accession_no_pattern = r"(MDI(\s*\d+)+)$"
             accession_no_match = re.search(accession_no_pattern, info)
             if accession_no_match:
                 patient_info['Accession No.'] = accession_no_match.group(1).strip()
