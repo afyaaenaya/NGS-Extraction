@@ -125,9 +125,10 @@ def patient_information(input_directory_path):
                     specimen_info = ast.literal_eval(response.choices[0].message.content)
                     patient_info.update(specimen_info)
                     break  
-                except:  
+                except Exception as e:  
                     if attempt == 1:  
                         print(f'Failed to extract information from line in {file_path}: {lines}')
+                        print(f'Error {e}')
         
             ## checking if any of the patients' required information is missing
             check_patient_info = itemgetter('Patient Name', 'Date of Birth', 'Gender', 'MRN', 'Lab No.', 'Accession No.', 'Clinical Indication', 'Type of Specimen', 'Physician', 'Date Received', 'Date Reported')
