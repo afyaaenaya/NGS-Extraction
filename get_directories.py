@@ -22,10 +22,10 @@ def get_output_file():
     if output_file_path:
         return output_file_path
 
-    output_file_path = input("Enter the path to the .csv file for the results. If the file does not exist, it will be created:")
+    output_file_path = input("Enter the path to the .xlsx file for the results. If the file does not exist, it will be created:")
 
-    while not output_file_path.endswith(".csv"):
-        output_file_path = input("The file has to be a .csv file. Enter the path to the .csv file for the results. If the file does not exist, it will be created:")
+    while not output_file_path.endswith(".xlsx"):
+        output_file_path = input("The file has to be a .xlsx file. Enter the path to the .csv file for the results. If the file does not exist, it will be created:")
 
     if not os.path.exists(output_file_path):
         create_confirmation = input(f"Do you want to create a new file at {output_file_path}? [y/n] ")
