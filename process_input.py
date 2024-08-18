@@ -72,10 +72,15 @@ def patient_information(file_path: str, text: str):
     if mrn_match:
         patient_info['MRN'] = mrn_match.group(1).strip()
 
-    lab_no_pattern = r"([A-Za-z]\d+)"
+    lab_no_pattern = r"([A-Za-z]{1,2}\d+)"
     lab_no_match = re.search(lab_no_pattern, info)
     if lab_no_match:
-        patient_info['Lab No.'] = lab_no_match.group(1).strip()
+        lab_no_match = lab_no_match.group(1).strip()
+        # a common error is an "O" appearing after the first letter in the lab no. after the OCR. this removes that "O" if present
+        if lab_no_match[1] == ("O" or "o"):
+            lab_no_match = lab_no_match[0] + lab_no_match[2:]
+
+        patient_info['Lab No.'] = lab_no_match
 
     accession_no_pattern = r"(MDI(\s*\d+)+)$"
     accession_no_match = re.search(accession_no_pattern, info)
