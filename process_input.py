@@ -55,36 +55,54 @@ def patient_information(input_directory_path):
             
             info = lines[i] ## name, date of birth, gender
             
-            pattern = r"^(.*?)(\d{2}/\d{2}/\d{4})(.*)$"
-
-            match = re.match(pattern, info)
-
-            if match:
-                patient_info['Patient Name'] = match.group(1)
-
-                patient_info['Date of Birth'] = match.group(2)
-
-                patient_info['Gender'] = match.group(3)
+            name_pattern = r"^([A-Za-z\s'-]+)"
+            name_match = re.search(name_pattern, info)
+            if name_match:
+                patient_info['Patient Name'] = name_match.group(1).strip()
             else:
-                print(f'Failed to extract information from line in {file_path}: {lines}')
+                print(f"Failed to extract 'Patient Name' from {file_path}")
+
+            date_pattern = r"(\d{1,2}/\d{1,2}/\d{4})"
+            date_match = re.search(date_pattern, info)
+            if date_match:
+                patient_info['Date of Birth'] = date_match.group(1)
+            else:
+                print(f"Failed to extract 'Date of Birth' from {file_path}")
+
+
+            gender_pattern = r"(\w{4,6})$"
+            gender_match = re.search(gender_pattern, info)
+            if gender_match:
+                patient_info['Gender'] = gender_match.group(1)
+            else:
+                print(f"Failed to extract 'Gender' from {file_path}")
 
             i += 1
             while lines[i].endswith(':'):
                 i += 1            
 
             info = lines[i] ## MRN, Lab No., Accession No.
-            pattern = r"^(\d+)\s+(M\w*\d+)\s+(.*)$"
 
-            match = re.match(pattern, info)
-
-            if match:
-                patient_info['MRN'] = match.group(1)
-
-                patient_info['Lab No.'] = match.group(2)
-
-                patient_info['Accession No.'] = match.group(3)
+            mrn_pattern = r"^(\d+)"
+            mrn_match = re.search(mrn_pattern, info)
+            if mrn_match:
+                patient_info['MRN'] = mrn_match.group(1).strip()
             else:
-                print(f'Failed to extract information from line in {file_path}: {lines}')
+                print(f"Failed to extract 'MRN' from {file_path}")
+
+            lab_no_pattern = r"(\w{1}\d+)"
+            lab_no_match = re.search(lab_no_pattern, info)
+            if lab_no_match:
+                patient_info['Lab No.'] = lab_no_match.group(1).strip()
+            else:
+                print(f"Failed to extract 'Lab No.' from {file_path}")
+
+            accession_no_pattern = r"(\d{4,})$"
+            accession_no_match = re.search(accession_no_pattern, info)
+            if accession_no_match:
+                patient_info['Accession No.'] = accession_no_match.group(1).strip()
+            else:
+                print(f"Failed to extract 'Accession No.' from {file_path}")
             
             lines = lines[i+1:] ## removing data that has already been extracted
 
