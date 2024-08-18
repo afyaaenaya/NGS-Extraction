@@ -1,7 +1,8 @@
 import os
 import re
 import pymupdf
-import csv
+import openpyxl
+from openpyxl import Workbook
 import ast
 from operator import itemgetter
 from get_directories import get_input_directory, get_output_file, input_directory_path, output_file_path
@@ -45,8 +46,6 @@ def patient_information(input_directory_path):
                     break
 
             lines = lines[:index]
-
-            print(lines)
 
             i = 1 ##skipping lines[0] as that contains PATIENT NAME
 
@@ -126,34 +125,82 @@ def patient_information(input_directory_path):
 
     return data, incomplete
 
-##TODO: convert to xlsx
+##TODO: add validate_input method to check for incomplete patient data or incorrect data type (i.e. numbers in name)
+
 def process_output(output_file_path, data: list):
     file_exists = os.path.exists(output_file_path)
 
-    with open(output_file_path, 'a', newline='') as output_file:
-        
-        fieldnames = ['Patient Name', 'Date of Birth', 'Gender', 'MRN', 'Lab No.', 'Accession No.', 'Clinical Indication', 'Type of Specimen', 'Tissue Origin', 'Physician', 'Date Received', 'Date Reported']
-        
-        writer = csv.DictWriter(output_file, fieldnames=fieldnames)
+    if file_exists:
+        workbook = openpyxl.load_workbook(output_file_path)
 
-        if not file_exists:
-            writer.writeheader()
+        if "Patient Data" in workbook.sheetnames:
+            sheet = workbook["Patient Data"]
+            if sheet.max_row == 0 or sheet[1][0].value != 'Patient Name':
+                sheet.append(['Patient Name', 'Date of Birth', 'Gender', 'MRN', 'Lab No.', 'Accession No.', 'Clinical Indication', 'Type of Specimen', 'Tissue Origin', 'Physician', 'Date Received', 'Date Reported'])
+        else:
+            sheet = workbook.create_sheet(title = "Patient Data")
+            sheet.append(['Patient Name', 'Date of Birth', 'Gender', 'MRN', 'Lab No.', 'Accession No.', 'Clinical Indication', 'Type of Specimen', 'Tissue Origin', 'Physician', 'Date Received', 'Date Reported'])
+    else:
+        workbook = Workbook()
+        sheet = workbook.active
+        sheet.title = "Patient Data"
+        sheet.append(['Patient Name', 'Date of Birth', 'Gender', 'MRN', 'Lab No.', 'Accession No.', 'Clinical Indication', 'Type of Specimen', 'Tissue Origin', 'Physician', 'Date Received', 'Date Reported'])
 
-        writer.writerows(data)
+    for row in data:
+        sheet.append([
+            row.get('Patient Name'),
+            row.get('Date of Birth'),
+            row.get('Gender'),
+            row.get('MRN'),
+            row.get('Lab No.'),
+            row.get('Accession No.'),
+            row.get('Clinical Indication'),
+            row.get('Type of Specimen'),
+            row.get('Tissue Origin'),
+            row.get('Physician'),
+            row.get('Date Received'),
+            row.get('Date Reported')
+        ])
+
+    workbook.save(output_file_path)
 
 def process_errors(output_file_path, data: list):
     file_exists = os.path.exists(output_file_path)
 
-    with open(output_file_path, 'a', newline='') as output_file:
+    if file_exists:
+        workbook = openpyxl.load_workbook(output_file_path)
         
-        fieldnames = ['File Name','Patient Name', 'Date of Birth', 'Gender', 'MRN', 'Lab No.', 'Accession No.', 'Clinical Indication', 'Type of Specimen', 'Tissue Origin', 'Physician', 'Date Received', 'Date Reported']
-        
-        writer = csv.DictWriter(output_file, fieldnames=fieldnames)
+        if "Incomplete" in workbook.sheetnames:
+            sheet = workbook["Incomplete"]
+            if sheet.max_row == 0 or sheet[1][0].value != 'File Name':
+                sheet.append(['File Name', 'Patient Name', 'Date of Birth', 'Gender', 'MRN', 'Lab No.', 'Accession No.', 'Clinical Indication', 'Type of Specimen', 'Tissue Origin', 'Physician', 'Date Received', 'Date Reported'])
+        else:
+            sheet = workbook.create_sheet(title="Incomplete")
+            sheet.append(['File Name', 'Patient Name', 'Date of Birth', 'Gender', 'MRN', 'Lab No.', 'Accession No.', 'Clinical Indication', 'Type of Specimen', 'Tissue Origin', 'Physician', 'Date Received', 'Date Reported'])
+    else:
+        workbook = Workbook()
+        sheet = workbook.active
+        sheet.title = "Incomplete"
+        sheet.append(['File Name', 'Patient Name', 'Date of Birth', 'Gender', 'MRN', 'Lab No.', 'Accession No.', 'Clinical Indication', 'Type of Specimen', 'Tissue Origin', 'Physician', 'Date Received', 'Date Reported'])
 
-        if not file_exists:
-            writer.writeheader()
+    for row in data:
+        sheet.append([
+            row.get('File Name'),
+            row.get('Patient Name'),
+            row.get('Date of Birth'),
+            row.get('Gender'),
+            row.get('MRN'),
+            row.get('Lab No.'),
+            row.get('Accession No.'),
+            row.get('Clinical Indication'),
+            row.get('Type of Specimen'),
+            row.get('Tissue Origin'),
+            row.get('Physician'),
+            row.get('Date Received'),
+            row.get('Date Reported')
+        ])
 
-        writer.writerows(data)
+    workbook.save(output_file_path)
 
 if __name__ == "__main__":
     input_directory_path = get_input_directory()

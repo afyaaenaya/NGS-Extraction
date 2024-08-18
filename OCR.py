@@ -16,4 +16,4 @@ def ocr_folder(dir_path):
 
 if __name__ == '__main__':
     input_directory_path = get_input_directory()
-    # ocr_folder(dir)
+    ocr_folder(input_directory_path)
