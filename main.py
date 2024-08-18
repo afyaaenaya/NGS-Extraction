@@ -13,17 +13,28 @@ if __name__ == '__main__':
 
     files = os.listdir(input_directory_path)
     for file in files:
-        if (file.lower().endswith(".pdf")) and (file not in processed_files):
-            file_path = os.path.join(input_directory_path, file)
+        file_path = os.path.abspath(os.path.join(input_directory_path, file))
+        if (file.lower().endswith(".pdf")) and (file_path not in processed_files):
+            print(f'Processing {file}')
 
+            print(f'Started OCR of {file}...')
             ocr_file(file_path)
+            print(f'Completed OCR of {file}')
 
+            print(f'Extracting text from {file}')
             text = extract_text(file_path)
-            patient_info = patient_information(file_path, text)
+            print(f'Extracted text from {file}')
 
-            if validate_input(patient_info):
+            print(f'Extracting patient information from {file}')
+            patient_info = patient_information(file_path, text)
+            print(f'Extracted patient information from {file}')
+
+            if validate_input(patient_info, file_path):
                 process_output(output_file_path, patient_info)
                 log_processed_file(file_path)
             else:
                 process_errors(output_file_path, patient_info)
                 log_processed_file(file_path)
+            print(f'Data from {file} added to {output_file_path}')
+
+            print(f'Done processing {file}')

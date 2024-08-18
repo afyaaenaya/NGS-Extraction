@@ -23,6 +23,8 @@ def patient_information(file_path: str, text: str):
     start = text.find('PATIENT NAME')
     if start == -1:
         validate_input(patient_info, file_path, no_start=True)
+        return patient_info
+        
 
     text = text[start:]
     lines = text.splitlines()
@@ -117,7 +119,7 @@ def validate_input(patient_info: dict, file_path: str, no_start = False, error =
         return False
     
     if error:
-        print(f'{error}')
+        print(f'Error with specimen information: {error}')
         patient_info['File Name'] = file_path
         return False
     
