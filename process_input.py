@@ -26,7 +26,7 @@ def patient_information(file_path: str, text: str):
             validate_input(patient_info, file_path, no_start=True)
             return patient_info
         else:
-            return alternate_patient_information(text, patient_info)[1]
+            return alternate_patient_information(file_path, text, patient_info)[1]
         
 
     text = text[start:]
@@ -124,7 +124,7 @@ def alternate_patient_information(file_path:str, text: str, patient_info: dict) 
     Works on 2021 and older PDF template
     """
 
-    start = text.find("Patient's Name")
+    start = text.find("Patient's")
     if start == -1:
         return False, patient_info
 
@@ -148,45 +148,37 @@ def alternate_patient_information(file_path:str, text: str, patient_info: dict) 
             break
 
     lines = lines[:index]
+    print(lines)
 
     i = 0
     info = lines[i] # first and middle name, MRN
     info = info.replace("|", "") #OCR returns | in between table cells. this removes them
 
-    first_name_pattern = r"^([A-Za-z\s'-]+)"
-    first_name_match = re.search(first_name_pattern, info)
-    if first_name_match:
-        patient_info['Patient Name'] = first_name_match.group(1).strip()
-    
-    mrn_pattern = r"(MRN:)\s+(\d+)"
-    mrn_match = re.search(mrn_pattern, info)
-    if mrn_match:
-        patient_info['MRN'] = mrn_match.group(2).strip()
+    name_mrn_pattern = r"([A-Z\s'-]+)\s*[^A-Z]*\s*(M\w{2,3}:)\s+(\d+)"
+    name_mrn_match = re.search(name_mrn_pattern, info)
+    if name_mrn_match:
+        patient_info['Patient Name'] = name_mrn_match.group(1).strip()
+        patient_info['MRN'] = name_mrn_match.group(3).strip()
 
-    # skip the lines containing just headers
-    if lines[i].endswith(':'):
-        i += 1
+    i += 2
     
     info = lines[i] #last name and lab no.
     info = info.replace("|", "")
 
-    last_name_pattern = r"^([A-Z\s'-]+?)(Lab)"
-    last_name_match = re.search(last_name_pattern, info)
-    if last_name_match:
-        patient_info['Patient Name'] = patient_info['Patient Name'] + ' ' + last_name_match.group(1).strip()
+    name_lab_pattern = r"^([A-Z\s'-]+?)(Lab No:)\s+([A-Za-z]{1,2}\d+)"
+    name_lab_match = re.search(name_lab_pattern, info)
+    if name_lab_match:
+        patient_info['Patient Name'] = patient_info['Patient Name'] + ' ' + name_lab_match.group(1).strip()
+        lab_no_match = name_lab_match.group(3).strip()
 
-    lab_no_pattern = r"(Lab No:)\s+([A-Za-z]{1,2}\d+)"
-    lab_no_match = re.search(lab_no_pattern, info)
-    if lab_no_match:
-        lab_no_match = lab_no_match.group(2).strip()
         # a common error is an "O" replacing the zero after the first letter in the lab no. after the OCR. this replaces that "O" if present
-        if lab_no_match[1] == ("O" or "o"):
+        if lab_no_match.lower()[1] == "o":
             lab_no_match = lab_no_match.lower().replace("o", "0", 1).upper()
 
         patient_info['Lab No.'] = lab_no_match
     
     i += 1
-    info = lines[1] #Date of birth, gender, accession no
+    info = lines[i] #Date of birth, gender, accession no
     info = info.replace("|", "") 
 
     date_pattern = r"(Date of Birth:)\s+(\d{1,2}/\d{1,2}/\d{4})"
@@ -194,7 +186,7 @@ def alternate_patient_information(file_path:str, text: str, patient_info: dict) 
     if date_match:
         patient_info['Date of Birth'] = date_match.group(2)
 
-    gender_pattern = r"(Gender:)\s+(\w{4,6})$"
+    gender_pattern = r"(Gender:)\s+(\w{4,6})"
     gender_match = re.search(gender_pattern, info)
     if gender_match:
         patient_info['Gender'] = gender_match.group(2)
