@@ -22,8 +22,11 @@ def patient_information(file_path: str, text: str):
 
     start = text.find('PATIENT NAME')
     if start == -1:
-        validate_input(patient_info, file_path, no_start=True)
-        return patient_info
+        if not alternate_patient_information(file_path, text, patient_info)[0]:
+            validate_input(patient_info, file_path, no_start=True)
+            return patient_info
+        else:
+            return alternate_patient_information(text, patient_info)[1]
         
 
     text = text[start:]
@@ -114,7 +117,134 @@ def patient_information(file_path: str, text: str):
     
     return patient_info
 
+
+def alternate_patient_information(file_path:str, text: str, patient_info: dict) -> tuple[bool, dict]:
+    """
+    Extract patient and specimen information from provided text
+    Works on 2021 and older PDF template
+    """
+
+    start = text.find("Patient's Name")
+    if start == -1:
+        return False, patient_info
+
+    lines = text.splitlines()
+    lines = [line.strip() for line in lines if len(line.strip()) > 1] ##remove empty or short lines
+
+    # trimming the beginning of the file
+    index = 0
+    for i, s in enumerate(lines):
+        if "patient's name" in s.lower():
+            index = i - 1 #Patient's name is a line before the heading "Patient's Name"
+            break
+
+    lines = lines[index:]
+
+    #trimming after the patient information
+    index = len(lines)
+    for i, s in enumerate(lines):
+        if "pathogenic mutations" in s.lower():
+            index = i
+            break
+
+    lines = lines[:index]
+
+    i = 0
+    info = lines[i] # first and middle name, MRN
+    info = info.replace("|", "") #OCR returns | in between table cells. this removes them
+
+    first_name_pattern = r"^([A-Za-z\s'-]+)"
+    first_name_match = re.search(first_name_pattern, info)
+    if first_name_match:
+        patient_info['Patient Name'] = first_name_match.group(1).strip()
     
+    mrn_pattern = r"(MRN:)\s+(\d+)"
+    mrn_match = re.search(mrn_pattern, info)
+    if mrn_match:
+        patient_info['MRN'] = mrn_match.group(2).strip()
+
+    # skip the lines containing just headers
+    if lines[i].endswith(':'):
+        i += 1
+    
+    info = lines[i] #last name and lab no.
+    info = info.replace("|", "")
+
+    last_name_pattern = r"^([A-Z\s'-]+?)(Lab)"
+    last_name_match = re.search(last_name_pattern, info)
+    if last_name_match:
+        patient_info['Patient Name'] = patient_info['Patient Name'] + ' ' + last_name_match.group(1).strip()
+
+    lab_no_pattern = r"(Lab No:)\s+([A-Za-z]{1,2}\d+)"
+    lab_no_match = re.search(lab_no_pattern, info)
+    if lab_no_match:
+        lab_no_match = lab_no_match.group(2).strip()
+        # a common error is an "O" replacing the zero after the first letter in the lab no. after the OCR. this replaces that "O" if present
+        if lab_no_match[1] == ("O" or "o"):
+            lab_no_match = lab_no_match.lower().replace("o", "0", 1).upper()
+
+        patient_info['Lab No.'] = lab_no_match
+    
+    i += 1
+    info = lines[1] #Date of birth, gender, accession no
+    info = info.replace("|", "") 
+
+    date_pattern = r"(Date of Birth:)\s+(\d{1,2}/\d{1,2}/\d{4})"
+    date_match = re.search(date_pattern, info)
+    if date_match:
+        patient_info['Date of Birth'] = date_match.group(2)
+
+    gender_pattern = r"(Gender:)\s+(\w{4,6})$"
+    gender_match = re.search(gender_pattern, info)
+    if gender_match:
+        patient_info['Gender'] = gender_match.group(2)
+    
+    accession_no_pattern = r"(Accession No:)\s+(\d+(\s*\d*)*)$"
+    accession_no_match = re.search(accession_no_pattern, info)
+    if accession_no_match:
+        patient_info['Accession No.'] = accession_no_match.group(2).strip()
+    
+    lines = lines[i+1:] ## removing data that has already been extracted
+
+    if "Tissue Origin and" in lines:
+        i = lines.index("Tissue Origin and")
+        destination = lines[i+1]
+        position = destination.find("Tumor Percentage")
+        if position != -1:
+            modified = destination[:position] + "Tissue Origin and " + destination[position:]
+            lines[i+1] = modified
+            lines.pop(i)
+        else:
+            position = -11 #putting "Tissue Origin and" before the word "Percentage:" at least
+            modified = destination[:position] + "Tissue Origin and " + destination[position:]
+            lines[i+1] = modified
+            lines.pop(i)
+
+    client = OpenAI(api_key=os.environ['OPENAI_API_KEY'])
+
+    model="gpt-4o-mini"
+
+    for attempt in range(2): # two attempts for OpenAI API to return a proper dictionary
+        response = client.chat.completions.create(
+            model=model,
+            messages=[
+                {"role": "system", "content": "Add the values to the following python dictionary using the provided text\
+                {'Clinical Indication': '', 'Type of Specimen': '', 'Tissue Origin': '', 'Physician': '', 'Date Received': '', 'Date Reported': ''}\
+                return just the dictionary with no formatting"},
+                {"role": "user", "content": "\n".join(lines)}
+            ]
+        )
+
+        try:
+            specimen_info = ast.literal_eval(response.choices[0].message.content)
+            patient_info.update(specimen_info)
+            break  
+        except Exception as e:  
+            if attempt == 1:  
+                validate_input(patient_info, file_path, error = e)
+    
+    return True, patient_info # return True if able to extract
+
 
 def validate_input(patient_info: dict, file_path: str, no_start = False, error = None):
 
