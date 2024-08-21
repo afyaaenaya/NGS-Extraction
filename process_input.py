@@ -5,7 +5,15 @@ import ast
 from operator import itemgetter
 from openai import OpenAI
 
-from process_tables import mutations_info
+import tempfile
+from pdf2image import convert_from_path
+from pdf2image.exceptions import (
+    PDFInfoNotInstalledError,
+    PDFPageCountError,
+    PDFSyntaxError
+)
+from img2table.document import Image
+from img2table.ocr import TesseractOCR
 
 def extract_text(file_path: str):
     """Extracts text from the PDF file and returns it as a string"""
@@ -118,9 +126,7 @@ def patient_information(file_path: str, text: str):
                 validate_input(patient_info, file_path, error = e)
     
     # extracting mutation information
-    success, mutation = mutations_info[file_path]
-    if success:
-        patient_info['Mutations'] = mutation
+    mutations_info(file_path, patient_info)
 
     return patient_info
 
@@ -155,7 +161,6 @@ def alternate_patient_information(file_path:str, text: str, patient_info: dict) 
             break
 
     lines = lines[:index]
-    print(lines)
 
     i = 0
     info = lines[i] # first and middle name, MRN
@@ -243,14 +248,30 @@ def alternate_patient_information(file_path:str, text: str, patient_info: dict) 
                 validate_input(patient_info, file_path, error = e)
     
     # extracting mutation information
-    success, mutation = mutations_info[file_path]
-    if success:
-        patient_info['Mutations'] = mutation
+    mutations_info(file_path, patient_info)
 
     return True, patient_info # return True if able to extract
 
+def mutations_info(file_path: str, patient_info: dict) -> None:
+    ocr = TesseractOCR()
 
-def validate_input(patient_info: dict, file_path: str, no_start = False, error = None):
+    with tempfile.TemporaryDirectory() as path:
+        images = convert_from_path(file_path, dpi = 200, output_folder=path, last_page = 1, paths_only = True)
+        image = Image(src = images[0])
+        extracted_tables = image.extract_tables(ocr = ocr)
+        if extracted_tables:
+            try:
+                for table in extracted_tables:
+                    if table.content[0][0]:
+                        if table.content[0][0].value.strip() == "Pathogenic Mutations Detected" and table.content[1][0].value:
+                            mutation = table.content[1][0].value
+                            mutation = mutation.replace("¢", "c")
+                            patient_info['Mutations'] = mutation
+            except Exception as e:
+                validate_input(patient_info, file_path, mutation_error = e)
+                return False, ""
+
+def validate_input(patient_info: dict, file_path: str, no_start = False, error = None, mutation_error = None):
 
     if no_start:
         print(f"{file_path} does not contain the proper information; could not find patient information")
@@ -259,6 +280,11 @@ def validate_input(patient_info: dict, file_path: str, no_start = False, error =
     
     if error:
         print(f'Error with specimen information: {error}')
+        patient_info['File Name'] = file_path
+        return False
+    
+    if mutation_error:
+        print(f'Error extracting mutation: {mutation_error}')
         patient_info['File Name'] = file_path
         return False
     
