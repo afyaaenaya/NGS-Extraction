@@ -242,6 +242,11 @@ def alternate_patient_information(file_path:str, text: str, patient_info: dict) 
             if attempt == 1:  
                 validate_input(patient_info, file_path, error = e)
     
+    # extracting mutation information
+    success, mutation = mutations_info[file_path]
+    if success:
+        patient_info['Mutations'] = mutation
+
     return True, patient_info # return True if able to extract
 
 
