@@ -11,15 +11,15 @@ def process_output(output_file_path, patient_info: dict):
         if "Patient Data" in workbook.sheetnames:
             sheet = workbook["Patient Data"]
             if sheet.max_row == 0 or sheet[1][0].value != 'Patient Name':
-                sheet.append(['Patient Name', 'Date of Birth', 'Gender', 'MRN', 'Lab No.', 'Accession No.', 'Clinical Indication', 'Type of Specimen', 'Tissue Origin', 'Physician', 'Date Received', 'Date Reported'])
+                sheet.append(['Patient Name', 'Date of Birth', 'Gender', 'MRN', 'Lab No.', 'Accession No.', 'Clinical Indication', 'Type of Specimen', 'Tissue Origin', 'Physician', 'Date Received', 'Date Reported', 'Mutations'])
         else:
             sheet = workbook.create_sheet(title = "Patient Data")
-            sheet.append(['Patient Name', 'Date of Birth', 'Gender', 'MRN', 'Lab No.', 'Accession No.', 'Clinical Indication', 'Type of Specimen', 'Tissue Origin', 'Physician', 'Date Received', 'Date Reported'])
+            sheet.append(['Patient Name', 'Date of Birth', 'Gender', 'MRN', 'Lab No.', 'Accession No.', 'Clinical Indication', 'Type of Specimen', 'Tissue Origin', 'Physician', 'Date Received', 'Date Reported', 'Mutations'])
     else:
         workbook = Workbook()
         sheet = workbook.active
         sheet.title = "Patient Data"
-        sheet.append(['Patient Name', 'Date of Birth', 'Gender', 'MRN', 'Lab No.', 'Accession No.', 'Clinical Indication', 'Type of Specimen', 'Tissue Origin', 'Physician', 'Date Received', 'Date Reported'])
+        sheet.append(['Patient Name', 'Date of Birth', 'Gender', 'MRN', 'Lab No.', 'Accession No.', 'Clinical Indication', 'Type of Specimen', 'Tissue Origin', 'Physician', 'Date Received', 'Date Reported', 'Mutations'])
 
     sheet.append([
         patient_info.get('Patient Name'),
@@ -33,7 +33,8 @@ def process_output(output_file_path, patient_info: dict):
         patient_info.get('Tissue Origin'),
         patient_info.get('Physician'),
         patient_info.get('Date Received'),
-        patient_info.get('Date Reported')
+        patient_info.get('Date Reported'),
+        patient_info.get('Mutations')
     ])
 
     workbook.save(output_file_path)
@@ -47,15 +48,15 @@ def process_errors(output_file_path, patient_info: dict):
         if "Incomplete" in workbook.sheetnames:
             sheet = workbook["Incomplete"]
             if sheet.max_row == 0 or sheet[1][0].value != 'File Name':
-                sheet.append(['File Name', 'Patient Name', 'Date of Birth', 'Gender', 'MRN', 'Lab No.', 'Accession No.', 'Clinical Indication', 'Type of Specimen', 'Tissue Origin', 'Physician', 'Date Received', 'Date Reported'])
+                sheet.append(['File Name', 'Patient Name', 'Date of Birth', 'Gender', 'MRN', 'Lab No.', 'Accession No.', 'Clinical Indication', 'Type of Specimen', 'Tissue Origin', 'Physician', 'Date Received', 'Date Reported', 'Mutations'])
         else:
             sheet = workbook.create_sheet(title="Incomplete")
-            sheet.append(['File Name', 'Patient Name', 'Date of Birth', 'Gender', 'MRN', 'Lab No.', 'Accession No.', 'Clinical Indication', 'Type of Specimen', 'Tissue Origin', 'Physician', 'Date Received', 'Date Reported'])
+            sheet.append(['File Name', 'Patient Name', 'Date of Birth', 'Gender', 'MRN', 'Lab No.', 'Accession No.', 'Clinical Indication', 'Type of Specimen', 'Tissue Origin', 'Physician', 'Date Received', 'Date Reported', 'Mutations'])
     else:
         workbook = Workbook()
         sheet = workbook.active
         sheet.title = "Incomplete"
-        sheet.append(['File Name', 'Patient Name', 'Date of Birth', 'Gender', 'MRN', 'Lab No.', 'Accession No.', 'Clinical Indication', 'Type of Specimen', 'Tissue Origin', 'Physician', 'Date Received', 'Date Reported'])
+        sheet.append(['File Name', 'Patient Name', 'Date of Birth', 'Gender', 'MRN', 'Lab No.', 'Accession No.', 'Clinical Indication', 'Type of Specimen', 'Tissue Origin', 'Physician', 'Date Received', 'Date Reported', 'Mutations'])
 
     sheet.append([
         patient_info.get('File Name'),
@@ -70,7 +71,8 @@ def process_errors(output_file_path, patient_info: dict):
         patient_info.get('Tissue Origin'),
         patient_info.get('Physician'),
         patient_info.get('Date Received'),
-        patient_info.get('Date Reported')
+        patient_info.get('Date Reported'),
+        patient_info.get('Mutations')
     ])
 
     workbook.save(output_file_path)
