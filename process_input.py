@@ -5,6 +5,8 @@ import ast
 from operator import itemgetter
 from openai import OpenAI
 
+from process_tables import mutations_info
+
 def extract_text(file_path: str):
     """Extracts text from the PDF file and returns it as a string"""
     document = pymupdf.open(file_path)
@@ -18,7 +20,7 @@ def extract_text(file_path: str):
 def patient_information(file_path: str, text: str):
     """Extract patient and specimen information from provided text"""
 
-    patient_info = {'Patient Name': '', 'Date of Birth': '', 'Gender': '', 'MRN': '', 'Lab No.': '', 'Accession No.': '', 'Clinical Indication': '', 'Type of Specimen': '', 'Tissue Origin': '', 'Physician': '', 'Date Received': '', 'Date Reported': ''}
+    patient_info = {'Patient Name': '', 'Date of Birth': '', 'Gender': '', 'MRN': '', 'Lab No.': '', 'Accession No.': '', 'Clinical Indication': '', 'Type of Specimen': '', 'Tissue Origin': '', 'Physician': '', 'Date Received': '', 'Date Reported': '', 'Mutations': ''}
 
     start = text.find('PATIENT NAME')
     if start == -1:
@@ -115,6 +117,11 @@ def patient_information(file_path: str, text: str):
             if attempt == 1:  
                 validate_input(patient_info, file_path, error = e)
     
+    # extracting mutation information
+    success, mutation = mutations_info[file_path]
+    if success:
+        patient_info['Mutations'] = mutation
+
     return patient_info
 
 
