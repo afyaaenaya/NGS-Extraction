@@ -17,9 +17,9 @@ if __name__ == '__main__':
         if (file.lower().endswith(".pdf")) and (file_path not in processed_files):
             print(f'Processing {file}')
 
-            # print(f'Started OCR of {file}...')
-            # ocr_file(file_path)
-            # print(f'Completed OCR of {file}')
+            print(f'Started OCR of {file}...')
+            ocr_file(file_path)
+            print(f'Completed OCR of {file}')
 
             print(f'Extracting text from {file}')
             text = extract_text(file_path)

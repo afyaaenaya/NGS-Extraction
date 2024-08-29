@@ -7,11 +7,7 @@ from openai import OpenAI
 
 import tempfile
 from pdf2image import convert_from_path
-from pdf2image.exceptions import (
-    PDFInfoNotInstalledError,
-    PDFPageCountError,
-    PDFSyntaxError
-)
+
 from img2table.document import Image
 from img2table.ocr import TesseractOCR
 
